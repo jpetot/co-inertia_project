@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Co-inertie</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Antoine Lucas, Julien Petot, Chloé Tellier" />
+    <meta name="date" content="2020-10-27" />
+    <link href="libs/remark-css/robot-fonts.css" rel="stylesheet" />
+    <link href="libs/tachyons/tachyons.min.css" rel="stylesheet" />
+    <link href="libs/tile-view/tile-view.css" rel="stylesheet" />
+    <script src="libs/tile-view/tile-view.js"></script>
+    <script type="application/json" id="xaringanExtra-editable-docid">{"id":"x206158dcd7348a7bb7a68d77a4acc69","expires":1}</script>
+    <script src="libs/himalaya/himalaya.js"></script>
+    <script src="libs/js-cookie/js.cookie.js"></script>
+    <link href="libs/editable/editable.css" rel="stylesheet" />
+    <script src="libs/editable/editable.js"></script>
+    <link href="libs/panelset/panelset.css" rel="stylesheet" />
+    <script src="libs/panelset/panelset.js"></script>
+    <link href="libs/animate.css/animate.xaringan.css" rel="stylesheet" />
+    <link href="libs/xaringanExtra-extra-styles/xaringanExtra-extra-styles.css" rel="stylesheet" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Co-inertie
+## Présentation
+### Antoine Lucas, Julien Petot, Chloé Tellier
+### Agrocampus Ouest
+### 2020-10-27
+
+---
+
+
+
+
+
+
+
+
+
+
+class: center, middle 
+&lt;!-- animated fadeInLeft slideOutRight --&gt;
+
+# Plan de la présentation 
+
+1) La co-inertie c'est quoi?
+
+2) Un exemple : données écologiques
+
+3) Pour aller plus loin...
+
+---
+class: center, middle
+
+# 1) La co-inertie c'est quoi?
+
+## Cadre général
+
+2 tableaux : même individus et différentes variables!
+
+On regarde les structures communes entres les 2 tables (et donc variables)
+
+1 seule contrainte pour les tailles des tables : les mêmes individus (attention au nommages dans les tables)
+
+Cadre typique : un tableau avec plutôt des variables réponses et le deuxième avec plutôt des variables explicatives &lt;sup&gt;1&lt;/sup&gt;
+
+.footnote[
+[1] [unconstrained-ordination](https://fukamilab.github.io/BIO202/06-A-unconstrained-ordination.html)
+]
+
+---
+
+# 1) La co-inertie c'est quoi?
+
+## Mais encore? 
+
+- Sert à décrire les structures communes entre les 2 tables sans a priori sur les relations entre les différentes variables des 2 tables
+
+- Les individus doivent être identiques (attention au naming!) et avec la même pondération (données équilibrées)
+
+---
+
+# La démarche 
+
+## Analyses factorielles
+
+- réalisation d'analyses factorielles préalables sur chacune des tables 
+
+--
+
+- l'analyse dépendra de la nature des variables : AFC (variables catégorielles) et ACP (variables quantitatives)
+
+--
+
+- On a ainsi obtenu 2 sous-espaces réduits à partir de chacune des tables 
+
+---
+
+# La démarche 
+
+## La co-inertie a proprement parler
+
+- Le principe de co-inertie est de réaliser une maximisation de la covariance entre les coordonnées des projections des deux sous-espaces crée.
+
+--
+
+- On s'intéresse à la co-structure entre les deux sous-espaces
+
+---
+
+# La démarche 
+
+## Test de co-structure
+
+On cherche à tester la significativité de la co-structure entre les 2 sous-espaces crée afin de déterminer si il y a bel et bien des relations entres les variables des deux tables d'origine.
+
+Pour cela, on :
+
+--
+
+- Calcule la valeur de la co-inertie totale tel que : coeff RV entre les 2 tables
+
+--
+
+- Permute les lignes d'une des 2 tables et on recalcule le coefficient RV
+
+--
+
+- Itère ce processus autant de fois que l'on veux (au moins 1000 fois)
+
+--
+
+- On obtient ainsi une distribution empirique du coefficient RV et on peux ainsi déterminer si la co-structure entre les 2 tables était dù à l'aléa ou non
+
+---
+
+class : center, middle
+
+# Un exemple : données écologiques
+
+
+
+Dataset sur les poissons : 
+
+
+```r
+head(doubs$env,n = 3) # données environnementales
+```
+
+```
+##   dfs alt   slo flo pH har pho nit amm oxy bdo
+## 1   3 934 6.176  84 79  45   1  20   0 122  27
+## 2  22 932 3.434 100 80  40   2  20  10 103  19
+## 3 102 914 3.638 180 83  52   5  22   5 105  35
+```
+
+```r
+head(doubs$fish,n = 3) # données de comptage des poissons
+```
+
+```
+##   Cogo Satr Phph Neba Thth Teso Chna Chto Lele Lece Baba Spbi Gogo Eslu Pefl
+## 1    0    3    0    0    0    0    0    0    0    0    0    0    0    0    0
+## 2    0    5    4    3    0    0    0    0    0    0    0    0    0    0    0
+## 3    0    5    5    5    0    0    0    0    0    0    0    0    0    1    0
+##   Rham Legi Scer Cyca Titi Abbr Icme Acce Ruru Blbj Alal Anan
+## 1    0    0    0    0    0    0    0    0    0    0    0    0
+## 2    0    0    0    0    0    0    0    0    0    0    0    0
+## 3    0    0    0    0    0    0    0    0    0    0    0    0
+```
+
+---
+
+# Réalisation des ACPs 
+
+
+```r
+env_pca &lt;- dudi.pca(doubs$env, scale = TRUE, scan = FALSE, nf = 3)
+fish_pca &lt;- dudi.pca(doubs$fish, scale = FALSE, scan = FALSE, nf = 2)
+
+# summary(env_pca)
+```
+
+La fonction `dudi.pca` permet de réaliser une ACP grâce au package `{ade4}` et on obtient un objet du type : 
+
+
+```
+## [1] "pca"  "dudi"
+```
+
+---
+
+# Réalisation de la co-inertie
+
+
+```r
+# attention, les objets pour la co-inertie doivent être de la classe "dudi" 
+
+coin1 &lt;- coinertia(env_pca,fish_pca, scan = FALSE, nf = 2)
+
+# summary(coin1)
+```
+
+On obtient alors un objet de type :
+
+
+```
+## [1] "coinertia" "dudi"
+```
+
+---
+
+# Graphiques et représentations 
+
+On peux ainsi réaliser des graphiques pour l'interprétation 
+.panelset[
+.panel[.panel-name[R Code]
+
+
+```r
+# r code for the s.arrow plot 
+
+s.arrow(coin1$l1, clab = 0.7)
+```
+
+```r
+s.arrow(coin1$c1, clab = 0.7)
+```
+
+```r
+par(mfrow = c(1,2))
+s.corcircle(coin1$aX)
+s.corcircle(coin1$aY)
+```
+
+```r
+par(mfrow = c(1,1))
+plot(coin1)
+```
+]
+.panel[.panel-name[sarrowplot1]
+![](figures/sarrowplot1.png)
+]
+]
+
+---
+
+## .can-edit[You can edit this slide title]
+
+
+&lt;!-- .panelset[ --&gt;
+&lt;!-- .panel[.panel-name[R Code] --&gt;
+
+&lt;!-- ```{r panel-chunk, fig.show='hide'} --&gt;
+&lt;!-- # ... r code ... --&gt;
+&lt;!-- ``` --&gt;
+&lt;!-- ] --&gt;
+
+&lt;!-- .panel[.panel-name[Plot] --&gt;
+
+&lt;!-- ![](README_files/figure-gfm/panel-chunk-1.png) --&gt;
+&lt;!-- ] --&gt;
+&lt;!-- ] --&gt;
+
+---
+
+class: center, middle
+
+# Thanks!
+
+Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).
+
+The chakra comes from [remark.js](https://remarkjs.com), [**knitr**](https://yihui.org/knitr), and [R Markdown](https://rmarkdown.rstudio.com).
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="libs/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "solarized-light",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

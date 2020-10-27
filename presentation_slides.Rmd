@@ -1,0 +1,254 @@
+---
+title: "Co-inertie"
+subtitle: "Présentation"
+author: "Antoine Lucas, Julien Petot, Chloé Tellier"
+institute: "Agrocampus Ouest"
+date: "`r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: ["xaringan-themer.css",robot-fonts]
+    chakra: libs/remark-latest.min.js
+    nature:
+      highlightStyle: solarized-light
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include = FALSE}
+options(htmltools.dir.version = FALSE)
+```
+
+```{r packages, include = FALSE}
+
+#load necessary packages for generation of R code in the presentation
+
+library(ade4)
+library(tidyverse)
+library(xaringanthemer)
+library(xaringanExtra)
+
+```
+
+```{r xaringanExtra, include = FALSE}
+
+xaringanExtra::use_tachyons()
+xaringanExtra::use_tile_view()
+xaringanExtra::use_editable(expires = 1)
+xaringanExtra::use_panelset()
+xaringanExtra::use_animate_css()
+xaringanExtra::use_extra_styles(hover_code_line = TRUE)
+
+```
+
+```{r xaringan-themer, include=FALSE}
+
+style_duo(primary_color = "#1F4257", secondary_color = "#F97B64")
+
+```
+
+class: center, middle 
+<!-- animated fadeInLeft slideOutRight -->
+
+# Plan de la présentation 
+
+1) La co-inertie c'est quoi?
+
+2) Un exemple : données écologiques
+
+3) Pour aller plus loin...
+
+---
+class: center, middle
+
+# 1) La co-inertie c'est quoi?
+
+## Cadre général
+
+2 tableaux : même individus et différentes variables!
+
+On regarde les structures communes entres les 2 tables (et donc variables)
+
+1 seule contrainte pour les tailles des tables : les mêmes individus (attention au nommages dans les tables)
+
+Cadre typique : un tableau avec plutôt des variables réponses et le deuxième avec plutôt des variables explicatives <sup>1</sup>
+
+.footnote[
+[1] [unconstrained-ordination](https://fukamilab.github.io/BIO202/06-A-unconstrained-ordination.html)
+]
+
+---
+
+# 1) La co-inertie c'est quoi?
+
+## Mais encore? 
+
+- Sert à décrire les structures communes entre les 2 tables sans a priori sur les relations entre les différentes variables des 2 tables
+
+- Les individus doivent être identiques (attention au naming!) et avec la même pondération (données équilibrées)
+
+---
+
+# La démarche 
+
+## Analyses factorielles
+
+- réalisation d'analyses factorielles préalables sur chacune des tables 
+
+--
+
+- l'analyse dépendra de la nature des variables : AFC (variables catégorielles) et ACP (variables quantitatives)
+
+--
+
+- On a ainsi obtenu 2 sous-espaces réduits à partir de chacune des tables 
+
+---
+
+# La démarche 
+
+## La co-inertie a proprement parler
+
+- Le principe de co-inertie est de réaliser une maximisation de la covariance entre les coordonnées des projections des deux sous-espaces crée.
+
+--
+
+- On s'intéresse à la co-structure entre les deux sous-espaces
+
+---
+
+# La démarche 
+
+## Test de co-structure
+
+On cherche à tester la significativité de la co-structure entre les 2 sous-espaces crée afin de déterminer si il y a bel et bien des relations entres les variables des deux tables d'origine.
+
+Pour cela, on :
+
+--
+
+- Calcule la valeur de la co-inertie totale tel que : coeff RV entre les 2 tables
+
+--
+
+- Permute les lignes d'une des 2 tables et on recalcule le coefficient RV
+
+--
+
+- Itère ce processus autant de fois que l'on veux (au moins 1000 fois)
+
+--
+
+- On obtient ainsi une distribution empirique du coefficient RV et on peux ainsi déterminer si la co-structure entre les 2 tables était dù à l'aléa ou non
+
+---
+
+class : center, middle
+
+# Un exemple : données écologiques
+
+```{r include=FALSE}
+data(doubs)
+```
+
+Dataset sur les poissons : 
+
+```{r}
+
+head(doubs$env,n = 3) # données environnementales
+head(doubs$fish,n = 3) # données de comptage des poissons
+
+```
+
+---
+
+# Réalisation des ACPs 
+
+```{r}
+
+env_pca <- dudi.pca(doubs$env, scale = TRUE, scan = FALSE, nf = 3)
+fish_pca <- dudi.pca(doubs$fish, scale = FALSE, scan = FALSE, nf = 2)
+
+# summary(env_pca)
+
+```
+
+La fonction `dudi.pca` permet de réaliser une ACP grâce au package `{ade4}` et on obtient un objet du type : 
+
+```{r echo=FALSE}
+class(env_pca)
+```
+
+---
+
+# Réalisation de la co-inertie
+
+```{r}
+
+# attention, les objets pour la co-inertie doivent être de la classe "dudi" 
+
+coin1 <- coinertia(env_pca,fish_pca, scan = FALSE, nf = 2)
+
+# summary(coin1)
+```
+
+On obtient alors un objet de type :
+
+```{r echo=FALSE}
+class(coin1)
+```
+
+---
+
+# Graphiques et représentations 
+
+On peux ainsi réaliser des graphiques pour l'interprétation 
+.panelset[
+.panel[.panel-name[R Code]
+
+```{r fig.show='hide'}
+# r code for the s.arrow plot 
+
+s.arrow(coin1$l1, clab = 0.7)
+s.arrow(coin1$c1, clab = 0.7)
+
+par(mfrow = c(1,2))
+s.corcircle(coin1$aX)
+s.corcircle(coin1$aY)
+par(mfrow = c(1,1))
+plot(coin1)
+```
+]
+.panel[.panel-name[sarrowplot1]
+![](figures/sarrowplot1.png)
+]
+]
+
+---
+
+## .can-edit[You can edit this slide title]
+
+
+<!-- .panelset[ -->
+<!-- .panel[.panel-name[R Code] -->
+
+<!-- ```{r panel-chunk, fig.show='hide'} -->
+<!-- # ... r code ... -->
+<!-- ``` -->
+<!-- ] -->
+
+<!-- .panel[.panel-name[Plot] -->
+
+<!-- ![](README_files/figure-gfm/panel-chunk-1.png) -->
+<!-- ] -->
+<!-- ] -->
+
+---
+
+class: center, middle
+
+# Thanks!
+
+Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).
+
+The chakra comes from [remark.js](https://remarkjs.com), [**knitr**](https://yihui.org/knitr), and [R Markdown](https://rmarkdown.rstudio.com).
