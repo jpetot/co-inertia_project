@@ -1,156 +1,5 @@
----
-title: "Co-inertie"
-subtitle: "Présentation"
-author: "Antoine Lucas, Julien Petot, Chloé Tellier"
-institute: "Agrocampus Ouest"
-date: "`r Sys.Date()`"
-output:
-  xaringan::moon_reader:
-    lib_dir: libs
-    css: ["xaringan-themer.css",robot-fonts]
-    chakra: libs/remark-latest.min.js
-    nature:
-      highlightStyle: solarized-light
-      highlightLines: true
-      countIncrementalSlides: false
----
-
-```{r setup, include = FALSE}
-options(htmltools.dir.version = FALSE)
-```
-
-```{r packages, include = FALSE}
-
-#load necessary packages for generation of R code in the presentation
-
-library(ade4)
 library(adegraphics)
-library(tidyverse)
-library(xaringanthemer)
-library(xaringanExtra)
-
-```
-
-```{r xaringanExtra, include = FALSE}
-
-xaringanExtra::use_tachyons()
-xaringanExtra::use_tile_view()
-xaringanExtra::use_editable(expires = 1)
-xaringanExtra::use_panelset()
-xaringanExtra::use_animate_css()
-xaringanExtra::use_extra_styles(hover_code_line = TRUE)
-
-```
-
-```{r xaringan-themer, include=FALSE}
-
-# sélection du thème de couleurs du slideshow
-style_duo(primary_color = "#1F4257", secondary_color = "#F97B64")
-
-```
-
-class: center, middle 
-
-# Plan de la présentation 
-
-1) La co-inertie c'est quoi?
-
-2) Un exemple : données simulées
-
-3) Pour aller plus loin...
-
----
-class: top
-
-# 1) La co-inertie c'est quoi?
-
-## Cadre général 
-
-- On a 2 tableaux différents : même individus et différentes variables 
-
---
-
-- On regarde les structures communes entre les 2 tableaux (et donc les variables qui les composent)
-
---
-
-- 1 seule contrainte pour les 2 tableaux : les individus doivent être identiques (attention aux noms dans les tableaux!) et avec la même pondération.
-
---
-
-Cadre typique : un tableau avec plutôt des variables réponses et le deuxième avec plutôt des variables explicatives. <br>
-Notre exemple : des stations de mesures avec dans un premier tableau des variables d'abondances d'espèces et dans le deuxième tableau des variables environnementales). Le but serait alors de regarder les relations entre les abondances et le climat
-
----
-
-# 1) La co-inertie c'est quoi?
-
-## Contraintes
-
-- La pondération entre les individus dépendent des analyses ( a relire/reformuler)
-
---
-
-- Les individus doivent être identiques (attention au naming!) 
-
---
-
-- Les individus doivent avoir la même pondération entre les deux tableaux, i.e que les poids attribués à la première analyse factorielle doivent être identiques aux poids de la seconde analyse factorielle 
-
-
----
-
-# 1) La co-inertie c'est quoi?
-
-## La démarche 
-
-- Il faut d'abord réaliser une analyse factorielle pour chaque tableaux afin d'obtenir deux sous-espaces (ou nuage de points) en faisant ACP/ACP ou ACP/AFC selon la nature des variables.
-
---
-
-- On "couple"/"fusionne" ensuite ces 2 nuages de points par le critère de la maximisation de la covariance : 
-$$\operatorname{cov}^{2}\left(X Q u_{1}, Y R v_{1}\right)=\operatorname{cor}^{2}\left(X Q u_{1}, Y R v_{1}\right) \operatorname{var}\left(X Q u_{1}\right) \operatorname{var}\left(Y R v_{1}\right)$$
-
---
-  
-- On obtient ainsi un seul sous-espace maximisant les relations entre les variables des 2 tableaux.
-
--- 
-
-- Les relations entre les deux tableaux sont indiqué par le coefficient de corrélation RV s'exprimant : ECRIRE LA FORMULE MATHEMATIQUE 
-
----
-
-# La démarche 
-
-## Test de co-structure
-
-On cherche à tester la significativité de la co-structure entre les 2 tableaux afin de déterminer si il y a bel et bien des relations entres les variables des deux tableaux d'origine.
-
-Pour cela, on :
-
---
-
-- Calcule la valeur de la co-inertie totale grâce aux coefficient RV entre les 2 tableaux
-
---
-
-- Permute les lignes d'un des 2 tableaux et on recalcule le coefficient RV
-
---
-
-- Itère ce processus autant de fois que l'on veux (au moins 1000 fois)
-
---
-
-- On obtient ainsi une distribution empirique du coefficient RV selon le nombre de permutations et on peux ainsi déterminer la significativité de la co-structure, i.e si la co-structure entre les 2 tableaux était dû à l'aléa ou non.
-
----
-class : center, middle
-
-# Un exemple : données simulées 
-
-```{r include=FALSE}
+library(ade4)
 
 ##### On construit le premier tableau
 
@@ -197,7 +46,8 @@ data <- data.frame(matrix(nrow = nsp, ncol = length(Tstations)))
 colnames(data) <- paste("st",1:length(Tstations), sep = "")
 rownames(data) <- paste("sp", round(topt, 0), sep = "")
 
-for( i in 1:nsp ){
+for( i in 1:nsp )
+{
   for( j in 1:length(Tstations))
   {
     # Pour chaque case de data, on simule la valeur à partir de la température de la station, de la
@@ -213,14 +63,11 @@ cols <- rev(rainbow(nsp, end = 5/6))
 plot(x = Taxis, y = sapply(Taxis, CTMI, param = c(tmin[1], topt[1], tmax[1], 1000)), type = "l",
      col = cols[1], main = paste("Répartition des", nsp, "espèces"), xlab = "Température [C]",
      ylab = "Nombre d'individus", lwd = 2)
-for( i in 2:nsp ){
+for( i in 2:nsp )
+{
   lines(x = Taxis, y = sapply(Taxis, CTMI, param = c(tmin[i], topt[i], tmax[i], 1000)),
         col = cols[i], lwd = 2)
 }
-
-```
-
-```{r }
 
 # La structure des données est très simple, on a une succession des espèces le long du gradient
 table.value(data, clegend = 0)
@@ -232,14 +79,6 @@ table.value(data, clegend = 0)
 data.vv <- data[sample(nrow(data)), sample(ncol(data))] # On permute aléatoirement lignes et colonnes
 table.value(data.vv, clegend = 0)
 
-```
-
----
-
-# Réalisation de l'AFC du premier tableau
-
-```{r}
-
 # On fait l'AFC (car données d'abondance) du tableau
 afc <- dudi.coa(data.vv, scann = FALSE)
 scatter(afc)
@@ -249,14 +88,6 @@ scatter(afc)
 # Cela permet de ré-ordonner le tableau pour mettre en évidence le gradient
 data.vv.ord <- data.vv[order(afc$li[, 1]), order(afc$co[, 1])]
 table.value(data.vv.ord, clegend = 0)
-
-```
-
----
-
-# Réalisation de l'ACP du deuxième tableau
-
-```{r}
 
 ##### On construit le deuxième tableau
 
@@ -282,10 +113,6 @@ apply(mesureT, 2, lines)
 # C'est difficile à voir vu l'intensité du bruit
 table.value(mesureT, clegend = 0)
 
-```
-
-```{r}
-
 # On fait l'ACP (car données quanti) du tableau
 acp <- dudi.pca(t(mesureT), scan=FALSE) # t pour mettre les stations en ligne donc en tant qu'individus
 scatter(acp)
@@ -294,13 +121,6 @@ scatter(acp)
 plot(Tstations, acp$li[,1], ylab = "F1", xlab = "Température",
      main = "Le premier facteur de l'ACP est\nle gradient thermique", pch = 19)
 
-```
-
----
-
-# Réalisation de la co-inertie
-
-```{r}
 
 ##### Couplage des deux tableaux
 
@@ -324,14 +144,6 @@ cia <- coinertia(dudiX = pca, dudiY = coa, scannf = FALSE, nf = 2)
 cia$eig[1]/sum(cia$eig)
 # Le premier facteur extrait 99.3% de la variabilité, c'est le gradient thermique (commun aux 2 tableaux)
 
-```
-
----
-
-# Test de la significativité
-
-```{r}
-
 # Significativité de la co-structure entre les deux tables ?
 cia$RV
 # On fait un test basé sur la comparaison entre la valeur de la co-inertie totale (coefficient RV entre
@@ -341,14 +153,6 @@ ciatest <- randtest(cia, nrepet =  999, fixed = 2)
 plot(ciatest)
 # Donc ici co-structure très significative entre les 2 tables, car RV est bien supérieur à ce qu'il
 # devrait être si c'était une distribution aléatoire (= si pas de corrélation) !
-
-```
-
----
-
-# Graphiques et représentations 
-
-```{r}
 
 # Représentation graphique des trois tableaux analysés :
 plot.new()
@@ -362,83 +166,3 @@ table.value(t(coa$tab), clabel.row = 0.7, clabel.col = 0.7)
 # Analyse de co-inertie
 par(mfg = c(2, 2))
 table.value(cia$tab, clabel.row = 0.7, clabel.col = 0.7)
-
-```
-
-
----
-
-
-On peux ainsi réaliser des graphiques pour l'interprétation 
-.panelset[
-.panel[.panel-name[R Code]
-
-```{r fig.show='hide'}
-# r code for the s.arrow plot 
-```
-]
-.panel[.panel-name[sarrowplot1]
-![](figures/sarrowplot1.png)
-]
-]
-
----
-
-## .can-edit[You can edit this slide title]
-
-<!-- .panelset[ -->
-<!-- .panel[.panel-name[R Code] -->
-
-<!-- ```{r panel-chunk, fig.show='hide'} -->
-<!-- # ... r code ... -->
-<!-- ``` -->
-<!-- ] -->
-
-<!-- .panel[.panel-name[Plot] -->
-
-<!-- ![](README_files/figure-gfm/panel-chunk-1.png) -->
-<!-- ] -->
-<!-- ] -->
-
----
-
-# 3 - Pour aller plus loin...
-
-On peux s'intéresser non pas à une analyse de co-inertie à 2 tableaux mais à K tableaux!<sup>1</sup>
-
-.footnote[
-[1] [Chessel, D. and M. Hanafi. “Analyses de la co-inertie de K nuages de points.” (1996).](http://www.numdam.org/article/RSA_1996__44_2_35_0.pdf)
-]
-
----
-
-# Bibliographie 
-
-- Chessel D. and Hanafi M. “Analyses de la co-inertie de K nuages de points.” (1996)
-[lien-1](http://www.numdam.org/article/RSA_1996__44_2_35_0.pdf)
-
-- Lobry J.R. "Analyse de co-inertie sur données simulées et sur
-données protéomiques." (2017) [lien-2](https://pbil.univ-lyon1.fr/R/pdf/tdr641.pdf)
-
-- de Magny C. et al. "De la statistique élémentaire à l'analyse de co-inertie." (2006) [lien-3](https://www.researchgate.net/publication/282171950_De_la_statistique_elementaire_a_l'analyse_de_co-inertie) 
-
----
-
-# Pour résumer, à vous de jouer!
-
-Les packages nécessaires : `{ade4} et {adegraphics}`
-
-- .can-edit[Le premier point essentiel... selon vous!]
-
-- .can-edit[Le deuxième point essentiel]
-
-- .can-edit[Le troisième point essentiel]
-
----
-class: center, middle
-
-# Thanks!
-
-Slides created via the R package [**xaringan**](https://github.com/yihui/xaringan).
-
-The chakra comes from [remark.js](https://remarkjs.com), [**knitr**](https://yihui.org/knitr), and [R Markdown](https://rmarkdown.rstudio.com).
