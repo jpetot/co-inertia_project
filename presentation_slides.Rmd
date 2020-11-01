@@ -21,13 +21,19 @@ options(htmltools.dir.version = FALSE)
 
 ```{r packages, include = FALSE}
 
-#load necessary packages for generation of R code in the presentation
+# Load necessary packages for generation of R code in the presentation
+
+## Only needed to run for the set-up
+
+#devtools::install_github("gadenbuie/xaringanExtra")
 
 library(ade4)
 library(adegraphics)
 library(tidyverse)
+library(xaringan)
 library(xaringanthemer)
 library(xaringanExtra)
+library(showtext)
 
 ```
 
@@ -41,6 +47,7 @@ xaringanExtra::use_animate_css()
 xaringanExtra::use_extra_styles(hover_code_line = TRUE)
 
 ```
+
 
 ```{r xaringan-themer, include=FALSE}
 
@@ -66,7 +73,7 @@ class: top
 
 ## Cadre général 
 
-- On a 2 tableaux différents : même individus et différentes variables 
+- On a 2 tableaux : même individus et différentes variables 
 
 --
 
@@ -78,8 +85,12 @@ class: top
 
 --
 
-Cadre typique : un tableau avec plutôt des variables réponses et le deuxième avec plutôt des variables explicatives. <br>
-Notre exemple : des stations de mesures avec dans un premier tableau des variables d'abondances d'espèces et dans le deuxième tableau des variables environnementales). Le but serait alors de regarder les relations entre les abondances et le climat
+Cadre typique : un tableau avec plutôt des variables réponses (matrice Y) et le deuxième avec plutôt des variables explicatives (matrice X). <br>
+
+--
+
+Notre exemple : des stations de mesures avec dans un premier tableau des variables d'abondances d'espèces (Y) et dans le deuxième tableau des variables environnementales(X) ). <br>
+Obectif : regarder les relations entre les abondances et l'environnement
 
 ---
 
@@ -104,13 +115,14 @@ Notre exemple : des stations de mesures avec dans un premier tableau des variabl
 
 ## La démarche 
 
-- Il faut d'abord réaliser une analyse factorielle pour chaque tableaux afin d'obtenir deux sous-espaces (ou nuage de points) en faisant ACP/ACP ou ACP/AFC selon la nature des variables.
+- Il faut d'abord réaliser une analyse factorielle (ACP/AFC/ACM) pour chaque tableaux afin d'obtenir deux sous-espaces (ou nuage de points).
+
+(figures/schema_coinertia1.png) # gerer la taille de l'image
 
 --
 
-- On "couple"/"fusionne" ensuite ces 2 nuages de points par le critère de la maximisation de la covariance : 
+- On "couple" ensuite ces 2 nuages de points par le critère de la maximisation de la covariance : 
 $$\operatorname{cov}^{2}\left(X Q u_{1}, Y R v_{1}\right)=\operatorname{cor}^{2}\left(X Q u_{1}, Y R v_{1}\right) \operatorname{var}\left(X Q u_{1}\right) \operatorname{var}\left(Y R v_{1}\right)$$
-
 --
   
 - On obtient ainsi un seul sous-espace maximisant les relations entre les variables des 2 tableaux.
